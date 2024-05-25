@@ -1,0 +1,2 @@
+class Pikachu < ApplicationRecord
+end

@@ -1,0 +1,35 @@
+<div ng-app="Pikachu_game" ng-controller="homePageController" class="home_page">
+  <div class="modal_home">
+    <div class="modal_layout"></div>
+    <div class="modal_content">
+      <div class="title">
+        <img src="/images/home/title_game.png" alt="">
+      </div>
+      <div class="btn_home level_home rounded-4">
+        Mức độ
+      </div>
+      <div class="btn_home rounded-4">
+        <p>Chơi online</p>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  angular.module('Pikachu_game',[])
+  .controller('homePageController', function ($scope, $http) {
+    function canConnectWithOneCorner(matrix, x1, y1, x2, y2) {
+  // Kiểm tra góc (x1, y2)
+  if (matrix[x1][y2] === 0 && canConnectDirectly(matrix, x1, y1, x1, y2) && canConnectDirectly(matrix, x1, y2, x2, y2)) {
+    return true;
+  }
+
+  // Kiểm tra góc (x2, y1)
+  if (matrix[x2][y1] === 0 && canConnectDirectly(matrix, x1, y1, x2, y1) && canConnectDirectly(matrix, x2, y1, x2, y2)) {
+    return true;
+  }
+
+  return false;
+}
+
+  })
+</script>

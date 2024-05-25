@@ -1,0 +1,158 @@
+<div ng-app="Pikachu_game" ng-controller="showPageController" class="showPage">
+  <div class="level_show text-center pt-5">Level 1</div>
+  <div class="row mx-5 content_show">
+    <div class="col-2"></div>
+    <div class="col-8">
+      <div class="row">
+        <div ng-repeat="item in matrix[0] track by $index" data-y="{{$index}}" data-x="0" class="col item d-flex justify-content-center align-items-center" style="{{getRadius($index,1,item)}}">
+          <img src="/images/show/item_{{item}}.svg" alt="">
+        </div>
+      </div>
+      <div class="row">
+        <div ng-repeat="item in matrix[1] track by $index" data-y="{{$index}}" data-x="1" class="col item d-flex justify-content-center align-items-center">
+          <img src="/images/show/item_{{item}}.svg" alt="">
+        </div>
+      </div>
+      <div class="row">
+        <div ng-repeat="item in matrix[2] track by $index" data-y="{{$index}}" data-x="2" class="col item d-flex justify-content-center align-items-center" style="{{getRadius($index,3,item)}}">
+          <img src="/images/show/item_{{item}}.svg" alt="">
+        </div>
+      </div>
+      <div class="row">
+        <div ng-repeat="item in matrix[3] track by $index" data-y="{{$index}}" data-x="3" class="col item d-flex justify-content-center align-items-center" style="{{getRadius($index,4,item)}}">
+          <img src="/images/show/item_{{item}}.svg" alt="">
+        </div>
+      </div>
+    </div>
+    <div class="col-2"></div>
+  </div>
+</div>
+<script>
+  angular.module('Pikachu_game',[])
+  .controller('showPageController', function ($scope, $http) {
+    $scope.matrix = []
+    for (let i = 0; i < 4; i++) {
+        $scope.matrix[i] = [];
+        for (let j = 0; j < 8; j++) {
+          $scope.matrix[i][j] = Math.floor(Math.random() * 9) + 1;
+          if((i === 2 && j === 1) || (i === 3 && j === 0) ){
+            $scope.matrix[i][j] = 0;
+          }
+        }
+    }
+    const directions = [
+      { dx: -1, dy: 0 }, // Lên
+      { dx: 1, dy: 0 },  // Xuống
+      { dx: 0, dy: -1 }, // Trái
+      { dx: 0, dy: 1 }   // Phải
+    ];
+    $scope.getRadius = function(index,row,value){
+      if(value == 0){
+        return "visibility: hidden;"
+      }
+      if(row == 1){
+        if(index == 0){
+          return "border-top-left-radius: 2rem;"
+        }
+        if(index == 7){
+          return "border-top-right-radius: 2rem;"
+        }
+      }
+      if(row == 3){
+        if(index == 0){
+          return "border-bottom-left-radius: 2rem;"
+        }
+      }
+      if(row ==4){
+
+        if(index == 1){
+          return "border-bottom-left-radius: 2rem;"
+        }
+        if(index == 7){
+          return "border-bottom-right-radius: 2rem;"
+        }
+      }
+    }
+
+
+
+    var coordinate = [];
+    $(document).on('click', '.item', function(){
+
+      coordinate.push($(this).attr('data-x'))
+      coordinate.push($(this).attr('data-y'))
+      console.log(coordinate)
+      if(coordinate.length == 4){
+        if(canConnect($scope.matrix , coordinate[0], coordinate[1] , coordinate[2] , coordinate[3])){
+          console.log('chon dung')
+        }else{
+          console.log('asi')
+        }
+
+      }
+
+
+    });
+
+    function canConnect(matrix, startX, startY, endX, endY) {
+      const rows = matrix.length;
+      const cols = matrix[0].length;
+
+      // Kiểm tra nếu hai ô chứa cùng một hình ảnh
+      if (matrix[startX][startY] !== matrix[endX][endY]) {
+          return false;
+      }
+
+      // Tạo ma trận đã thăm
+      let visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+
+      // Hàng đợi BFS
+      let queue = [];
+      queue.push({ x: startX, y: startY, turns: 0, direction: null });
+      visited[startX][startY] = true;
+
+      while (queue.length > 0) {
+          let { x, y, turns, direction } = queue.shift();
+          console.log('diem moi')
+          console.log(x, y, turns, direction)
+
+          // Kiểm tra nếu đã đến ô đích
+          if (x === endX && y === endY) {
+              return true;
+          }
+
+          // Duyệt các hướng di chuyển
+          for (let i = 0; i < directions.length; i++) {
+              let newX = parseInt(x) + directions[i].dx;
+              let newY = parseInt(y) + directions[i].dy;
+              let newDirection = i;
+              console.log('huong :'+ i)
+              console.log(newX,newY)
+              if(newX == endX && newY == endY){
+                console.log('da den')
+                console.log(visited)
+              }
+              // Kiểm tra điều kiện trong ma trận và ô trống hoặc đích
+              while (newX >= 0 && newX < rows && newY >= 0 && newY < cols && (matrix[newX][newY] === 0 || (newX === endX && newY === endY))) {
+                  // Tăng số lần đổi hướng nếu đổi hướng
+                  let newTurns = (direction !== null && direction !== newDirection) ? turns + 1 : turns;
+
+                  // Nếu số lần đổi hướng lớn hơn 2, dừng lại
+                  if (newTurns > 2) break;
+
+                  // Nếu ô chưa được thăm hoặc ít lần đổi hướng hơn
+                  if (!visited[newX][newY] || (visited[newX][newY] && newTurns < turns)) {
+                      visited[newX][newY] = true;
+                      queue.push({ x: newX, y: newY, turns: newTurns, direction: newDirection });
+                  }
+
+                  newX += directions[i].dx;
+                  newY += directions[i].dy;
+              }
+          }
+      }
+
+      return false;
+    }
+  })
+</script>
